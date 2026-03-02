@@ -12,8 +12,8 @@
                 <th style="text-align: left; padding: 0.5rem;">Username</th>
                 <th style="text-align: left; padding: 0.5rem;">Email</th>
                 <th style="text-align: left; padding: 0.5rem;">Role</th>
-                <th style="text-align: left; padding: 0.5rem;">Notifications</th>
-                <th style="text-align: left; padding: 0.5rem;">Actions</th>
+                <th style="text-align: center; padding: 0.5rem;">Notifications</th>
+                <th style="text-align: center; padding: 0.5rem;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -22,11 +22,13 @@
                 <td style="padding: 0.5rem;">{{ user.username }}</td>
                 <td style="padding: 0.5rem;">{{ user.email }}</td>
                 <td style="padding: 0.5rem;">{{ user.role_name }}</td>
-                <td style="padding: 0.5rem;">{{ 'Enabled' if user.notifications_enabled else 'Disabled' }}</td>
-                <td style="padding: 0.5rem;">
-                    <form method="post" action="{{ url_for('admin.toggle_notifications', id=user.id) }}" style="display: inline;">
-                        <button type="submit" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">
-                            Toggle Notifications
+                <td style="text-align: center; padding: 0.5rem;">
+                    {{ 'Enabled' if user.notifications_enabled else 'Disabled' }}
+                </td>
+                <td style="text-align: center; padding: 0.5rem;">
+                    <form method="post" action="{{ url_for('admin.toggle_notifications', id=user.id) }}" style="display: inline; padding: 0; margin: 0;">
+                        <button type="submit" style="background: #3498db; border: none; color: white; cursor: pointer; padding: 0.25rem 0.5rem; margin: 0; font-size: 0.9rem; font-family: inherit; line-height: inherit; border-radius: 3px;">
+                            Toggle
                         </button>
                     </form>
                 </td>

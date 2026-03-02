@@ -35,31 +35,20 @@ def create_app(test_config=None):
     # Index route
     @app.route('/')
     def index():
+        from app.models import Recipe, Category
         from app.db import get_db
-        db = get_db()
         
-        # Get recent recipes
-        recent_recipes = db.execute(
-            'SELECT r.*, u.username as author_name, '
-            'AVG(rv.rating) as avg_rating, '
-            'COUNT(DISTINCT rv.id) as review_count '
-            'FROM recipes r '
-            'JOIN users u ON r.author_id = u.id '
-            'LEFT JOIN reviews rv ON r.id = rv.recipe_id '
-            'WHERE r.is_public = 1 '
-            'GROUP BY r.id '
-            'ORDER BY r.created_at DESC LIMIT 6'
-        ).fetchall()
+        recent_recipes = Recipe.get_recent(limit=6)
         
         # Get stats
+        db = get_db()
         stats = {
-            'total_recipes': db.execute('SELECT COUNT(*) FROM recipes WHERE is_public = 1').fetchone()[0],
+            'total_recipes': Recipe.get_stats()['total_recipes'],
             'total_users': db.execute('SELECT COUNT(*) FROM users').fetchone()[0],
             'total_reviews': db.execute('SELECT COUNT(*) FROM reviews').fetchone()[0],
         }
         
-        # Get popular categories
-        categories = db.execute('SELECT * FROM categories LIMIT 6').fetchall()
+        categories = Category.get_all()[:6]
         
         return render_template('index.html', 
                              recipes=recent_recipes, 

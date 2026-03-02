@@ -5,7 +5,7 @@
 {% block content %}
 <h1>Create New Recipe</h1>
 
-<form method="post">
+<form method="post" class="form-card">
     <div class="form-group">
         <label for="title">Title *</label>
         <input type="text" name="title" id="title" required>
@@ -37,6 +37,30 @@
     <div class="form-group">
         <label for="cook_time_minutes">Cook Time (minutes)</label>
         <input type="number" name="cook_time_minutes" id="cook_time_minutes" min="0">
+    </div>
+
+    <div class="form-group">
+        <label>Categories</label>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem;">
+            {% for category in categories %}
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" name="categories" value="{{ category.id }}">
+                <span>{{ category.name }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Dietary Tags</label>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem;">
+            {% for tag in tags %}
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" name="tags" value="{{ tag.id }}">
+                <span>{{ tag.name }}</span>
+            </label>
+            {% endfor %}
+        </div>
     </div>
 
     <button type="submit">Create Recipe</button>

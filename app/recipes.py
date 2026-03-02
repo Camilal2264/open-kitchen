@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, g
-from app.db import get_db
+from app.models import Recipe, Ingredient, Instruction, Review, Comment, ActivityLog, Unit, Allergen, Category, Tag
 from app.auth import login_required
 
 bp = Blueprint('recipes', __name__, url_prefix='/recipes')
@@ -8,95 +8,44 @@ bp = Blueprint('recipes', __name__, url_prefix='/recipes')
 @bp.route('/')
 def index():
     """List all public recipes with filtering."""
-    db = get_db()
+    filters = {
+        'category': request.args.get('category'),
+        'tag': request.args.get('tag'),
+        'author': request.args.get('author'),
+        'search': request.args.get('search'),
+    }
     
-    # Get filter parameters
-    category = request.args.get('category')
-    tag = request.args.get('tag')
-    author = request.args.get('author')
-    search = request.args.get('search')
-    
-    # Build query
-    query = '''
-        SELECT DISTINCT r.*, u.username as author_name,
-               AVG(rv.rating) as avg_rating,
-               COUNT(DISTINCT rv.id) as review_count
-        FROM recipes r
-        JOIN users u ON r.author_id = u.id
-        LEFT JOIN reviews rv ON r.id = rv.recipe_id
-        WHERE r.is_public = 1
-    '''
-    params = []
-    
-    if category:
-        query += ' AND r.id IN (SELECT recipe_id FROM recipe_categories WHERE category_id = ?)'
-        params.append(category)
-    
-    if tag:
-        query += ' AND r.id IN (SELECT recipe_id FROM recipe_tags WHERE tag_id = ?)'
-        params.append(tag)
-    
-    if author:
-        query += ' AND r.author_id = ?'
-        params.append(author)
-    
-    if search:
-        query += ' AND (r.title LIKE ? OR r.description LIKE ?)'
-        params.extend([f'%{search}%', f'%{search}%'])
-    
-    query += ' GROUP BY r.id ORDER BY r.created_at DESC'
-    
-    recipes = db.execute(query, params).fetchall()
-    
+    recipes = Recipe.get_all_public(filters)
     return render_template('recipes/index.html', recipes=recipes)
 
 
 @bp.route('/<int:id>')
 def view(id):
     """View a single recipe with ingredients and instructions."""
-    db = get_db()
-    
-    recipe = db.execute(
-        'SELECT r.*, u.username as author_name '
-        'FROM recipes r JOIN users u ON r.author_id = u.id '
-        'WHERE r.id = ?',
-        (id,)
-    ).fetchone()
+    recipe = Recipe.get_by_id(id)
     
     if recipe is None:
         flash('Recipe not found.')
         return redirect(url_for('recipes.index'))
     
-    # Get ingredients
-    ingredients = db.execute(
-        'SELECT i.*, u.name as unit_name, u.abbreviation, a.name as allergen_name '
-        'FROM ingredients i '
-        'JOIN units u ON i.unit_id = u.id '
-        'LEFT JOIN allergens a ON i.allergen_id = a.id '
-        'WHERE i.recipe_id = ?',
-        (id,)
+    ingredients = Ingredient.get_by_recipe(id)
+    instructions = Instruction.get_by_recipe(id)
+    reviews = Review.get_by_recipe(id)
+    comments = Comment.get_by_recipe(id)
+    
+    # Get categories and tags
+    from app.db import get_db
+    db = get_db()
+    categories = db.execute(
+        'SELECT c.* FROM categories c '
+        'JOIN recipe_categories rc ON c.id = rc.category_id '
+        'WHERE rc.recipe_id = ?', (id,)
     ).fetchall()
     
-    # Get instructions
-    instructions = db.execute(
-        'SELECT * FROM instructions WHERE recipe_id = ? ORDER BY step_number',
-        (id,)
-    ).fetchall()
-    
-    # Get reviews
-    reviews = db.execute(
-        'SELECT r.*, u.username FROM reviews r '
-        'JOIN users u ON r.user_id = u.id '
-        'WHERE r.recipe_id = ? ORDER BY r.created_at DESC',
-        (id,)
-    ).fetchall()
-    
-    # Get comments
-    comments = db.execute(
-        'SELECT c.*, u.username FROM comments c '
-        'JOIN users u ON c.user_id = u.id '
-        'WHERE c.recipe_id = ? ORDER BY c.created_at DESC',
-        (id,)
+    tags = db.execute(
+        'SELECT t.* FROM tags t '
+        'JOIN recipe_tags rt ON t.id = rt.tag_id '
+        'WHERE rt.recipe_id = ?', (id,)
     ).fetchall()
     
     return render_template('recipes/view.html', 
@@ -104,7 +53,9 @@ def view(id):
                          ingredients=ingredients,
                          instructions=instructions,
                          reviews=reviews,
-                         comments=comments)
+                         comments=comments,
+                         categories=categories,
+                         tags=tags)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -118,6 +69,8 @@ def create():
         base_servings = request.form.get('base_servings', type=int)
         prep_time = request.form.get('prep_time_minutes', type=int)
         cook_time = request.form.get('cook_time_minutes', type=int)
+        category_ids = request.form.getlist('categories')
+        tag_ids = request.form.getlist('tags')
         
         error = None
         if not title:
@@ -126,101 +79,173 @@ def create():
             error = 'Invalid template type.'
         
         if error is None:
+            recipe_id = Recipe.create(
+                title, description, template_type, g.user['id'],
+                base_servings, prep_time, cook_time
+            )
+            
+            # Add categories and tags
+            from app.db import get_db
             db = get_db()
-            cursor = db.execute(
-                'INSERT INTO recipes (title, description, template_type, author_id, '
-                'base_servings, prep_time_minutes, cook_time_minutes) '
-                'VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (title, description, template_type, g.user['id'], 
-                 base_servings, prep_time, cook_time)
-            )
-            db.commit()
             
-            # Log activity
-            db.execute(
-                'INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id) '
-                'VALUES (?, ?, ?, ?)',
-                (g.user['id'], 'created', 'recipe', cursor.lastrowid)
-            )
-            db.commit()
+            for cat_id in category_ids:
+                db.execute(
+                    'INSERT INTO recipe_categories (recipe_id, category_id) VALUES (?, ?)',
+                    (recipe_id, cat_id)
+                )
             
-            return redirect(url_for('recipes.view', id=cursor.lastrowid))
+            for tag_id in tag_ids:
+                db.execute(
+                    'INSERT INTO recipe_tags (recipe_id, tag_id) VALUES (?, ?)',
+                    (recipe_id, tag_id)
+                )
+            
+            db.commit()
+            ActivityLog.log(g.user['id'], 'created', 'recipe', recipe_id)
+            return redirect(url_for('recipes.edit_ingredients', id=recipe_id))
         
         flash(error)
     
-    return render_template('recipes/create.html')
+    categories = Category.get_all()
+    tags = Tag.get_all()
+    return render_template('recipes/create.html', categories=categories, tags=tags)
+
+
+@bp.route('/<int:id>/ingredients', methods=('GET', 'POST'))
+@login_required
+def edit_ingredients(id):
+    """Add/edit ingredients for a recipe."""
+    recipe = Recipe.get_by_id(id)
+    
+    if recipe is None or recipe['author_id'] != g.user['id']:
+        flash('Recipe not found or access denied.')
+        return redirect(url_for('recipes.index'))
+    
+    if request.method == 'POST':
+        from app.db import get_db
+        db = get_db()
+        
+        name = request.form['name']
+        quantity = request.form.get('quantity', type=float)
+        unit_id = request.form.get('unit_id', type=int)
+        allergen_id = request.form.get('allergen_id', type=int) or None
+        
+        if name and quantity and unit_id:
+            db.execute(
+                'INSERT INTO ingredients (recipe_id, name, quantity, unit_id, allergen_id) '
+                'VALUES (?, ?, ?, ?, ?)',
+                (id, name, quantity, unit_id, allergen_id)
+            )
+            db.commit()
+            flash('Ingredient added!')
+        else:
+            flash('Please fill all required fields.')
+    
+    ingredients = Ingredient.get_by_recipe(id)
+    units = Unit.get_all()
+    allergens = Allergen.get_all()
+    
+    return render_template('recipes/edit_ingredients.html',
+                         recipe=recipe,
+                         ingredients=ingredients,
+                         units=units,
+                         allergens=allergens)
+
+
+@bp.route('/<int:id>/instructions', methods=('GET', 'POST'))
+@login_required
+def edit_instructions(id):
+    """Add/edit instructions for a recipe."""
+    recipe = Recipe.get_by_id(id)
+    
+    if recipe is None or recipe['author_id'] != g.user['id']:
+        flash('Recipe not found or access denied.')
+        return redirect(url_for('recipes.index'))
+    
+    if request.method == 'POST':
+        from app.db import get_db
+        db = get_db()
+        
+        content = request.form['content']
+        step_number = request.form.get('step_number', type=int)
+        
+        if content and step_number:
+            db.execute(
+                'INSERT INTO instructions (recipe_id, step_number, content) '
+                'VALUES (?, ?, ?)',
+                (id, step_number, content)
+            )
+            db.commit()
+            flash('Instruction added!')
+        else:
+            flash('Please fill all required fields.')
+    
+    instructions = Instruction.get_by_recipe(id)
+    
+    return render_template('recipes/edit_instructions.html',
+                         recipe=recipe,
+                         instructions=instructions)
+
+
+@bp.route('/ingredients/<int:id>/delete', methods=('POST',))
+@login_required
+def delete_ingredient(id):
+    """Delete an ingredient."""
+    from app.db import get_db
+    db = get_db()
+    
+    ingredient = db.execute(
+        'SELECT i.*, r.author_id FROM ingredients i '
+        'JOIN recipes r ON i.recipe_id = r.id '
+        'WHERE i.id = ?', (id,)
+    ).fetchone()
+    
+    if ingredient is None or ingredient['author_id'] != g.user['id']:
+        flash('Ingredient not found or access denied.')
+        return redirect(url_for('recipes.index'))
+    
+    recipe_id = ingredient['recipe_id']
+    db.execute('DELETE FROM ingredients WHERE id = ?', (id,))
+    db.commit()
+    flash('Ingredient deleted.')
+    
+    return redirect(url_for('recipes.edit_ingredients', id=recipe_id))
+
+
+@bp.route('/instructions/<int:id>/delete', methods=('POST',))
+@login_required
+def delete_instruction(id):
+    """Delete an instruction."""
+    from app.db import get_db
+    db = get_db()
+    
+    instruction = db.execute(
+        'SELECT i.*, r.author_id FROM instructions i '
+        'JOIN recipes r ON i.recipe_id = r.id '
+        'WHERE i.id = ?', (id,)
+    ).fetchone()
+    
+    if instruction is None or instruction['author_id'] != g.user['id']:
+        flash('Instruction not found or access denied.')
+        return redirect(url_for('recipes.index'))
+    
+    recipe_id = instruction['recipe_id']
+    db.execute('DELETE FROM instructions WHERE id = ?', (id,))
+    db.commit()
+    flash('Instruction deleted.')
+    
+    return redirect(url_for('recipes.edit_instructions', id=recipe_id))
 
 
 @bp.route('/<int:id>/fork', methods=('POST',))
 @login_required
 def fork(id):
     """Fork an existing recipe."""
-    db = get_db()
+    new_recipe_id = Recipe.fork(id, g.user['id'], g.user['username'])
     
-    # Get original recipe
-    original = db.execute('SELECT * FROM recipes WHERE id = ?', (id,)).fetchone()
-    
-    if original is None:
+    if new_recipe_id is None:
         flash('Recipe not found.')
         return redirect(url_for('recipes.index'))
     
-    # Create forked recipe
-    cursor = db.execute(
-        'INSERT INTO recipes (title, description, template_type, author_id, '
-        'base_servings, prep_time_minutes, cook_time_minutes, parent_recipe_id) '
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        (f"{original['title']} (Fork)", original['description'], 
-         original['template_type'], g.user['id'], original['base_servings'],
-         original['prep_time_minutes'], original['cook_time_minutes'], id)
-    )
-    new_recipe_id = cursor.lastrowid
-    
-    # Copy ingredients
-    ingredients = db.execute('SELECT * FROM ingredients WHERE recipe_id = ?', (id,)).fetchall()
-    for ing in ingredients:
-        db.execute(
-            'INSERT INTO ingredients (recipe_id, name, quantity, unit_id, allergen_id) '
-            'VALUES (?, ?, ?, ?, ?)',
-            (new_recipe_id, ing['name'], ing['quantity'], ing['unit_id'], ing['allergen_id'])
-        )
-    
-    # Copy instructions
-    instructions = db.execute('SELECT * FROM instructions WHERE recipe_id = ?', (id,)).fetchall()
-    for inst in instructions:
-        db.execute(
-            'INSERT INTO instructions (recipe_id, step_number, content) '
-            'VALUES (?, ?, ?)',
-            (new_recipe_id, inst['step_number'], inst['content'])
-        )
-    
-    # Copy categories and tags
-    db.execute(
-        'INSERT INTO recipe_categories (recipe_id, category_id) '
-        'SELECT ?, category_id FROM recipe_categories WHERE recipe_id = ?',
-        (new_recipe_id, id)
-    )
-    db.execute(
-        'INSERT INTO recipe_tags (recipe_id, tag_id) '
-        'SELECT ?, tag_id FROM recipe_tags WHERE recipe_id = ?',
-        (new_recipe_id, id)
-    )
-    
-    # Log activity
-    db.execute(
-        'INSERT INTO activity_logs (user_id, action_type, entity_type, entity_id) '
-        'VALUES (?, ?, ?, ?)',
-        (g.user['id'], 'forked', 'recipe', new_recipe_id)
-    )
-    
-    # Notify original author
-    if original['author_id'] != g.user['id']:
-        db.execute(
-            'INSERT INTO notifications (user_id, type, reference_id, message) '
-            'VALUES (?, ?, ?, ?)',
-            (original['author_id'], 'fork_created', new_recipe_id,
-             f"{g.user['username']} forked your recipe '{original['title']}'")
-        )
-    
-    db.commit()
     flash('Recipe forked successfully!')
     return redirect(url_for('recipes.view', id=new_recipe_id))

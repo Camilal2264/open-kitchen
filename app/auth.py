@@ -2,8 +2,7 @@ import functools
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
-from werkzeug.security import check_password_hash, generate_password_hash
-from app.db import get_db
+from app.models import User
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -15,7 +14,6 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        db = get_db()
         error = None
 
         if not username:
@@ -27,15 +25,10 @@ def register():
 
         if error is None:
             try:
-                db.execute(
-                    "INSERT INTO users (username, email, password_hash, role_id) VALUES (?, ?, ?, ?)",
-                    (username, email, generate_password_hash(password), 1),
-                )
-                db.commit()
-            except db.IntegrityError:
-                error = f"User {username} or email {email} is already registered."
-            else:
+                User.create(username, email, password)
                 return redirect(url_for("auth.login"))
+            except Exception as e:
+                error = f"User {username} or email {email} is already registered."
 
         flash(error)
 
@@ -48,15 +41,12 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        db = get_db()
         error = None
-        user = db.execute(
-            'SELECT * FROM users WHERE username = ?', (username,)
-        ).fetchone()
+        user = User.get_by_username(username)
 
         if user is None:
             error = 'Incorrect username.'
-        elif not check_password_hash(user['password_hash'], password):
+        elif not User.verify_password(user, password):
             error = 'Incorrect password.'
 
         if error is None:
@@ -77,11 +67,7 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().execute(
-            'SELECT u.*, r.name as role_name FROM users u '
-            'JOIN roles r ON u.role_id = r.id '
-            'WHERE u.id = ?', (user_id,)
-        ).fetchone()
+        g.user = User.get_by_id(user_id)
 
 
 @bp.route('/logout')
