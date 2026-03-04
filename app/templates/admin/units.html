@@ -3,44 +3,74 @@
 {% block title %}Manage Units - Admin{% endblock %}
 
 {% block content %}
-<h1>Manage Units</h1>
+<div class="level mb-5">
+    <div class="level-left">
+        <div class="level-item">
+            <h1 class="title is-2">📏 Manage Units</h1>
+        </div>
+    </div>
+    <div class="level-right">
+        <div class="level-item">
+            <a href="{{ url_for('admin.index') }}" class="button is-light">
+                <span class="icon">⬅️</span>
+                <span>Back to Admin</span>
+            </a>
+        </div>
+    </div>
+</div>
 
-<div class="card">
-    <h2>Add New Unit</h2>
-    <form method="post" action="{{ url_for('admin.add_unit') }}" class="form-card">
-        <div style="display: flex; gap: 1rem; align-items: end;">
-            <div class="form-group" style="flex: 2;">
-                <label for="name">Unit Name</label>
-                <input type="text" name="name" id="name" required>
+<div class="box mb-5">
+    <h2 class="title is-4">➕ Add New Unit</h2>
+    <form method="post" action="{{ url_for('admin.add_unit') }}">
+        <div class="columns">
+            <div class="column is-8">
+                <div class="field">
+                    <label class="label" for="name">Unit Name</label>
+                    <div class="control">
+                        <input class="input" type="text" name="name" id="name" placeholder="e.g., Tablespoon" required>
+                    </div>
+                </div>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label for="abbreviation">Abbreviation</label>
-                <input type="text" name="abbreviation" id="abbreviation">
+            <div class="column is-3">
+                <div class="field">
+                    <label class="label" for="abbreviation">Abbreviation</label>
+                    <div class="control">
+                        <input class="input" type="text" name="abbreviation" id="abbreviation" placeholder="e.g., tbsp">
+                    </div>
+                </div>
             </div>
-            <button type="submit">Add Unit</button>
+            <div class="column is-1 is-flex is-align-items-end">
+                <div class="field">
+                    <div class="control">
+                        <button type="submit" class="button is-primary">
+                            <span class="icon">➕</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </form>
 </div>
 
-<div class="card">
-    <h2>Existing Units</h2>
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="border-bottom: 2px solid #ddd;">
-                <th style="text-align: left; padding: 0.5rem;">Name</th>
-                <th style="text-align: left; padding: 0.5rem;">Abbreviation</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for unit in units %}
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 0.5rem;">{{ unit.name }}</td>
-                <td style="padding: 0.5rem;">{{ unit.abbreviation }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="box">
+    <h2 class="title is-4">📋 Existing Units</h2>
+    <div class="table-container">
+        <table class="table is-fullwidth is-striped is-hoverable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Abbreviation</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for unit in units %}
+                <tr>
+                    <td><strong>{{ unit.name }}</strong></td>
+                    <td><code>{{ unit.abbreviation }}</code></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<a href="{{ url_for('admin.index') }}" class="btn btn-secondary">Back to Admin</a>
 {% endblock %}

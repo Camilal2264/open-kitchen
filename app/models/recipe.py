@@ -135,12 +135,12 @@ class Recipe:
         )
         
         # Log activity
-        from app.models.activity import ActivityLog
+        from app.models.system import ActivityLog
         ActivityLog.log(author_id, 'forked', 'recipe', new_recipe_id)
         
         # Notify original author
         if original['author_id'] != author_id:
-            from app.models.notification import Notification
+            from app.models.system import Notification
             Notification.create(
                 original['author_id'], 
                 'fork_created', 

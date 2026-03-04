@@ -3,43 +3,82 @@
 {% block title %}Edit Instructions - {{ recipe.title }}{% endblock %}
 
 {% block content %}
-<h1>Edit Instructions: {{ recipe.title }}</h1>
+<h1 class="title is-2">📝 Edit Instructions: {{ recipe.title }}</h1>
 
-<div class="card">
-    <h2>Add Instruction Step</h2>
-    <form method="post" class="form-card">
-        <div class="form-group">
-            <label for="step_number">Step Number *</label>
-            <input type="number" name="step_number" id="step_number" min="1" value="{{ (instructions|length) + 1 }}" required>
+<div class="box mb-5">
+    <h2 class="title is-4">Add Instruction Step</h2>
+    <form method="post">
+        <div class="columns">
+            <div class="column is-2">
+                <div class="field">
+                    <label class="label" for="step_number">Step # *</label>
+                    <div class="control">
+                        <input class="input" type="number" name="step_number" id="step_number" min="1" value="{{ (instructions|length) + 1 }}" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="field">
+                    <label class="label" for="content">Instruction *</label>
+                    <div class="control">
+                        <textarea class="textarea" name="content" id="content" placeholder="Describe this step in detail..." rows="3" required></textarea>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="content">Instruction *</label>
-            <textarea name="content" id="content" required></textarea>
+        <div class="field">
+            <div class="control">
+                <button type="submit" class="button is-primary">
+                    <span class="icon">➕</span>
+                    <span>Add Step</span>
+                </button>
+            </div>
         </div>
-
-        <button type="submit">Add Step</button>
     </form>
 </div>
 
 {% if instructions %}
-<div class="card">
-    <h2>Current Instructions</h2>
-    <ol style="padding-left: 1.5rem;">
-    {% for step in instructions %}
-        <li style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: start;">
-            <span style="flex: 1;">{{ step.content }}</span>
-            <form method="post" action="{{ url_for('recipes.delete_instruction', id=step.id) }}" style="display: inline; margin: 0 0 0 1rem;">
-                <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">Delete</button>
-            </form>
-        </li>
-    {% endfor %}
-    </ol>
+<div class="box">
+    <h2 class="title is-4">Current Instructions</h2>
+    <div class="content">
+        {% for step in instructions %}
+        <div class="notification is-light mb-3">
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <span class="tag is-primary is-large is-rounded mr-3">{{ step.step_number }}</span>
+                    </div>
+                    <div class="level-item">
+                        <p>{{ step.content }}</p>
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <form method="post" action="{{ url_for('recipes.delete_instruction', id=step.id) }}">
+                            <button type="submit" class="button is-danger is-small">
+                                <span class="icon">🗑️</span>
+                                <span>Delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
 
-<div style="margin-top: 1rem;">
-    <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="btn">Done - View Recipe</a>
-    <a href="{{ url_for('recipes.edit_ingredients', id=recipe.id) }}" class="btn btn-secondary">Back to Ingredients</a>
+<div class="buttons mt-5">
+    <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="button is-success">
+        <span class="icon">✅</span>
+        <span>Done - View Recipe</span>
+    </a>
+    <a href="{{ url_for('recipes.edit_ingredients', id=recipe.id) }}" class="button is-light">
+        <span class="icon">⬅️</span>
+        <span>Back to Ingredients</span>
+    </a>
 </div>
 {% endblock %}

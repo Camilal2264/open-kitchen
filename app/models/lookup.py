@@ -2,6 +2,22 @@
 from app.db import get_db
 
 
+# Category emoji mapping
+CATEGORY_EMOJIS = {
+    1: '🥟',   # Appetizer
+    2: '🍖',   # Main Course
+    3: '🍰',   # Dessert
+    4: '🥞',   # Breakfast
+    5: '🍱',   # Lunch
+    6: '🍲',   # Dinner
+    7: '🍿',   # Snack
+    8: '🥤',   # Beverage
+    9: '🥗',   # Salad
+    10: '🍜',  # Soup
+    11: '🍟',  # Side Dish
+}
+
+
 class Unit:
     """Unit model."""
     

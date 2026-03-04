@@ -48,3 +48,33 @@ class SavedRecipe:
             'ORDER BY sr.saved_at DESC',
             (user_id,)
         ).fetchall()
+    
+    @staticmethod
+    def is_saved(user_id, recipe_id):
+        """Check if a recipe is saved by a user."""
+        db = get_db()
+        result = db.execute(
+            'SELECT 1 FROM saved_recipes WHERE user_id = ? AND recipe_id = ?',
+            (user_id, recipe_id)
+        ).fetchone()
+        return result is not None
+    
+    @staticmethod
+    def save(user_id, recipe_id):
+        """Save a recipe for a user."""
+        db = get_db()
+        db.execute(
+            'INSERT INTO saved_recipes (user_id, recipe_id) VALUES (?, ?)',
+            (user_id, recipe_id)
+        )
+        db.commit()
+    
+    @staticmethod
+    def unsave(user_id, recipe_id):
+        """Unsave a recipe for a user."""
+        db = get_db()
+        db.execute(
+            'DELETE FROM saved_recipes WHERE user_id = ? AND recipe_id = ?',
+            (user_id, recipe_id)
+        )
+        db.commit()

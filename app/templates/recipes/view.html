@@ -3,114 +3,218 @@
 {% block title %}{{ recipe.title }} - Open Kitchen{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h1>{{ recipe.title }}</h1>
-    <div class="recipe-meta" style="margin-bottom: 1rem;">
-        <div>By {{ recipe.author_name }} | {{ recipe.template_type|replace('_', ' ')|title }}</div>
+<a href="{{ url_for('recipes.index') }}" class="button is-light mb-4">
+    <span class="icon">⬅️</span>
+    <span>Back to Recipes</span>
+</a>
+<div class="box">
+    {% if recipe.parent_recipe_id %}
+    <div class="notification is-info is-light mb-4">
+        <p><strong>🔀 This is a forked recipe</strong></p>
+        <p>Original recipe: <a href="{{ url_for('recipes.view', id=recipe.parent_recipe_id) }}">View parent recipe</a></p>
+    </div>
+    {% endif %}
+    
+    <h1 class="title is-2">{{ recipe.title }}</h1>
+    
+    <div class="tags mb-4">
+        <span class="tag is-info">
+            <span class="icon">👤</span>
+            <span>{{ recipe.author_name }}</span>
+        </span>
+        <span class="tag is-light">{{ recipe.template_type|replace('_', ' ')|title }}</span>
         {% if recipe.base_servings %}
-        <div>Servings: {{ recipe.base_servings }}</div>
+        <span class="tag">
+            <span class="icon">🍽️</span>
+            <span>{{ recipe.base_servings }} servings</span>
+        </span>
         {% endif %}
         {% if recipe.prep_time_minutes %}
-        <div>Prep: {{ recipe.prep_time_minutes }} min</div>
+        <span class="tag is-warning">
+            <span class="icon">⏱️</span>
+            <span>Prep: {{ recipe.prep_time_minutes }} min</span>
+        </span>
         {% endif %}
         {% if recipe.cook_time_minutes %}
-        <div>Cook: {{ recipe.cook_time_minutes }} min</div>
+        <span class="tag is-danger">
+            <span class="icon">🔥</span>
+            <span>Cook: {{ recipe.cook_time_minutes }} min</span>
+        </span>
         {% endif %}
     </div>
     
     {% if recipe.description %}
-    <p style="margin-bottom: 1rem;">{{ recipe.description }}</p>
+    <div class="content">
+        <p class="subtitle is-5">{{ recipe.description }}</p>
+    </div>
     {% endif %}
 
     {% if categories %}
-    <div style="margin-bottom: 1rem;">
-        <strong>Categories:</strong>
+    <div class="field is-grouped is-grouped-multiline mb-4">
+        <div class="control">
+            <div class="tags has-addons">
+                <span class="tag is-dark">Categories</span>
+            </div>
+        </div>
         {% for category in categories %}
-        <span style="display: inline-block; background: #ecf0f1; padding: 0.25rem 0.75rem; border-radius: 15px; margin: 0.25rem; font-size: 0.9rem;">
-            {{ category.name }}
-        </span>
+        <div class="control">
+            <span class="tag is-rounded" style="background-color: 
+                {% if category.id == 1 %}#ff6b9d
+                {% elif category.id == 2 %}#ff9a76
+                {% elif category.id == 3 %}#ffd93d
+                {% elif category.id == 4 %}#ffb74d
+                {% elif category.id == 5 %}#81c784
+                {% elif category.id == 6 %}#ba68c8
+                {% elif category.id == 7 %}#4fc3f7
+                {% elif category.id == 8 %}#64b5f6
+                {% elif category.id == 9 %}#aed581
+                {% elif category.id == 10 %}#ff8a65
+                {% elif category.id == 11 %}#90a4ae
+                {% endif %}; color: {% if category.id == 3 %}#333{% else %}white{% endif %};">
+                {% if category.id == 1 %}🥟{% elif category.id == 2 %}🍖{% elif category.id == 3 %}🍰{% elif category.id == 4 %}🥞{% elif category.id == 5 %}🍱{% elif category.id == 6 %}🍲{% elif category.id == 7 %}🍿{% elif category.id == 8 %}🥤{% elif category.id == 9 %}🥗{% elif category.id == 10 %}🍜{% elif category.id == 11 %}🍟{% endif %}
+                {{ category.name }}
+            </span>
+        </div>
         {% endfor %}
     </div>
     {% endif %}
 
     {% if tags %}
-    <div style="margin-bottom: 1rem;">
-        <strong>Tags:</strong>
+    <div class="field is-grouped is-grouped-multiline mb-4">
+        <div class="control">
+            <div class="tags has-addons">
+                <span class="tag is-success">Tags</span>
+            </div>
+        </div>
         {% for tag in tags %}
-        <span style="display: inline-block; background: #d5e8d4; padding: 0.25rem 0.75rem; border-radius: 15px; margin: 0.25rem; font-size: 0.9rem;">
-            {{ tag.name }}
-        </span>
+        <div class="control">
+            <span class="tag is-success is-light is-rounded">{{ tag.name }}</span>
+        </div>
         {% endfor %}
     </div>
     {% endif %}
 
-    {% if g.user and g.user['id'] == recipe.author_id %}
-    <a href="{{ url_for('recipes.edit_ingredients', id=recipe.id) }}" class="btn">Edit Ingredients</a>
-    <a href="{{ url_for('recipes.edit_instructions', id=recipe.id) }}" class="btn">Edit Instructions</a>
-    {% endif %}
-    
-    {% if g.user %}
-    <form method="post" action="{{ url_for('recipes.fork', id=recipe.id) }}" style="display: inline; margin: 0;">
-        <button type="submit" class="btn">Fork Recipe</button>
-    </form>
-    {% endif %}
+    <div class="buttons">
+        {% if g.user and g.user['id'] == recipe.author_id %}
+        <a href="{{ url_for('recipes.edit_ingredients', id=recipe.id) }}" class="button is-info">
+            <span class="icon">🥕</span>
+            <span>Edit Ingredients</span>
+        </a>
+        <a href="{{ url_for('recipes.edit_instructions', id=recipe.id) }}" class="button is-info">
+            <span class="icon">📝</span>
+            <span>Edit Instructions</span>
+        </a>
+        {% endif %}
+        
+        {% if g.user %}
+        <form method="post" action="{{ url_for('recipes.fork', id=recipe.id) }}" style="display: inline;">
+            <button type="submit" class="button is-primary">
+                <span class="icon">🍴</span>
+                <span>Fork Recipe</span>
+            </button>
+        </form>
+        
+        <form method="post" action="{{ url_for('recipes.save', id=recipe.id) }}" style="display: inline;">
+            <button type="submit" class="button {% if is_saved %}is-warning{% else %}is-light{% endif %}">
+                <span class="icon">{% if is_saved %}💾{% else %}🔖{% endif %}</span>
+                <span>{% if is_saved %}Saved{% else %}Save Recipe{% endif %}</span>
+            </button>
+        </form>
+        {% endif %}
+    </div>
 </div>
 
 {% if ingredients %}
-<div class="card" style="margin-top: 1.5rem;">
-    <h2>Ingredients</h2>
-    <ul style="list-style: none; padding: 0;">
-    {% for ing in ingredients %}
-        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
-            {{ ing.quantity }} {{ ing.abbreviation or ing.unit_name }} {{ ing.name }}
-            {% if ing.allergen_name %}
-            <span style="color: #e74c3c; font-weight: bold;">({{ ing.allergen_name }})</span>
-            {% endif %}
-        </li>
-    {% endfor %}
-    </ul>
+<div class="box" style="margin-top: 1.5rem;">
+    <h2 class="title is-4">🥕 Ingredients</h2>
+    <div class="content">
+        <ul class="is-size-5">
+        {% for ing in ingredients %}
+            <li class="mb-3">
+                <strong>{{ ing.quantity }}</strong> {{ ing.abbreviation or ing.unit_name }} {{ ing.name }}
+                {% if ing.allergen_name %}
+                <span class="tag is-danger ml-2">⚠️ {{ ing.allergen_name }}</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
 </div>
 {% endif %}
 
 {% if instructions %}
-<div class="card" style="margin-top: 1.5rem;">
-    <h2>Instructions</h2>
-    <ol style="padding-left: 1.5rem; margin: 0;">
-    {% for step in instructions %}
-        <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">{{ step.content }}</li>
-    {% endfor %}
-    </ol>
+<div class="box" style="margin-top: 1.5rem;">
+    <h2 class="title is-4">📝 Instructions</h2>
+    <div class="content">
+        {% for step in instructions %}
+        <div class="notification is-light mb-3 instruction-item">
+            <div class="media">
+                <div class="media-left">
+                    <span class="tag is-primary is-large is-rounded">{{ step.step_number }}</span>
+                </div>
+                <div class="media-content">
+                    <p class="is-size-5">{{ step.content }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
 
-<div class="card" style="margin-top: 1.5rem;">
-    <h2>Reviews</h2>
+<div class="box" style="margin-top: 1.5rem;">
+    <h2 class="title is-4">⭐ Reviews</h2>
     {% for review in reviews %}
-    <div style="border-bottom: 1px solid #eee; padding: 1rem 0;">
-        <div style="display: flex; justify-content: space-between;">
-            <strong>{{ review.username }}</strong>
-            <span class="rating">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</span>
+    <article class="media mb-4">
+        <figure class="media-left">
+            <div class="avatar">{{ review.username[0].upper() }}</div>
+        </figure>
+        <div class="media-content">
+            <div class="content">
+                <p>
+                    <strong>{{ review.username }}</strong>
+                    <br>
+                    <span class="rating-stars">{{ '⭐' * review.rating }}</span>
+                    <br>
+                    {% if review.comment %}
+                    {{ review.comment }}
+                    {% endif %}
+                    <br>
+                    <small class="has-text-grey">{{ review.created_at }}</small>
+                </p>
+            </div>
         </div>
-        {% if review.comment %}
-        <p>{{ review.comment }}</p>
-        {% endif %}
-        <small style="color: #7f8c8d;">{{ review.created_at }}</small>
-    </div>
+    </article>
     {% else %}
-    <p>No reviews yet. Be the first to review!</p>
+    <div class="notification is-info is-light">
+        <p>No reviews yet. Be the first to review this recipe!</p>
+    </div>
     {% endfor %}
 </div>
 
-<div class="card" style="margin-top: 1.5rem;">
-    <h2>Comments</h2>
+<div class="box" style="margin-top: 1.5rem;">
+    <h2 class="title is-4">💬 Comments</h2>
     {% for comment in comments %}
-    <div style="border-bottom: 1px solid #eee; padding: 1rem 0;">
-        <strong>{{ comment.username }}</strong>
-        <p>{{ comment.content }}</p>
-        <small style="color: #7f8c8d;">{{ comment.created_at }}</small>
-    </div>
+    <article class="media mb-4">
+        <figure class="media-left">
+            <div class="avatar">{{ comment.username[0].upper() }}</div>
+        </figure>
+        <div class="media-content">
+            <div class="content">
+                <p>
+                    <strong>{{ comment.username }}</strong>
+                    <br>
+                    {{ comment.content }}
+                    <br>
+                    <small class="has-text-grey">{{ comment.created_at }}</small>
+                </p>
+            </div>
+        </div>
+    </article>
     {% else %}
-    <p>No comments yet.</p>
+    <div class="notification is-light">
+        <p>No comments yet.</p>
+    </div>
     {% endfor %}
 </div>
 {% endblock %}

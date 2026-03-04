@@ -3,37 +3,87 @@
 {% block title %}Admin - Open Kitchen{% endblock %}
 
 {% block content %}
-<h1>Admin Dashboard</h1>
+<h1 class="title is-2">⚙️ Admin Dashboard</h1>
 
-<div class="recipe-grid">
-    <div class="card">
-        <h2>User Management</h2>
-        <p>Manage users, roles, and notification settings.</p>
-        <a href="{{ url_for('admin.users') }}" class="btn">Manage Users</a>
+<div class="columns is-multiline">
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-content has-text-centered">
+                <p class="title is-1">👥</p>
+                <p class="title is-4">User Management</p>
+                <p class="subtitle is-6">Manage users, roles, and notification settings.</p>
+            </div>
+            <footer class="card-footer">
+                <a href="{{ url_for('admin.users') }}" class="card-footer-item">
+                    <span class="icon">⚙️</span>
+                    <span>Manage Users</span>
+                </a>
+            </footer>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>Units Management</h2>
-        <p>Manage measurement units lookup table.</p>
-        <a href="{{ url_for('admin.units') }}" class="btn">Manage Units</a>
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-content has-text-centered">
+                <p class="title is-1">📏</p>
+                <p class="title is-4">Units Management</p>
+                <p class="subtitle is-6">Manage measurement units lookup table.</p>
+            </div>
+            <footer class="card-footer">
+                <a href="{{ url_for('admin.units') }}" class="card-footer-item">
+                    <span class="icon">⚙️</span>
+                    <span>Manage Units</span>
+                </a>
+            </footer>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>Most Forked Recipes</h2>
-        <p>View recipes that have been forked the most.</p>
-        <a href="{{ url_for('admin.most_forked') }}" class="btn">View Report</a>
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-content has-text-centered">
+                <p class="title is-1">🍴</p>
+                <p class="title is-4">Most Forked Recipes</p>
+                <p class="subtitle is-6">View recipes that have been forked the most.</p>
+            </div>
+            <footer class="card-footer">
+                <a href="{{ url_for('admin.most_forked') }}" class="card-footer-item">
+                    <span class="icon">📊</span>
+                    <span>View Report</span>
+                </a>
+            </footer>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>Allergen Audit</h2>
-        <p>Filter recipes by allergen content.</p>
-        <a href="{{ url_for('admin.allergen_audit') }}" class="btn">Run Audit</a>
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-content has-text-centered">
+                <p class="title is-1">⚠️</p>
+                <p class="title is-4">Allergen Audit</p>
+                <p class="subtitle is-6">Filter recipes by allergen content.</p>
+            </div>
+            <footer class="card-footer">
+                <a href="{{ url_for('admin.allergen_audit') }}" class="card-footer-item">
+                    <span class="icon">🔍</span>
+                    <span>Run Audit</span>
+                </a>
+            </footer>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>User Activity Report</h2>
-        <p>View user contributions in the last 30 days.</p>
-        <a href="{{ url_for('admin.user_activity') }}" class="btn">View Report</a>
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-content has-text-centered">
+                <p class="title is-1">📈</p>
+                <p class="title is-4">User Activity Report</p>
+                <p class="subtitle is-6">View user contributions in the last 30 days.</p>
+            </div>
+            <footer class="card-footer">
+                <a href="{{ url_for('admin.user_activity') }}" class="card-footer-item">
+                    <span class="icon">📊</span>
+                    <span>View Report</span>
+                </a>
+            </footer>
+        </div>
     </div>
 </div>
 {% endblock %}

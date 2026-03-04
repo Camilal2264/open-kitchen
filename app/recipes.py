@@ -16,7 +16,8 @@ def index():
     }
     
     recipes = Recipe.get_all_public(filters)
-    return render_template('recipes/index.html', recipes=recipes)
+    categories = Category.get_all()
+    return render_template('recipes/index.html', recipes=recipes, categories=categories)
 
 
 @bp.route('/<int:id>')
@@ -35,6 +36,7 @@ def view(id):
     
     # Get categories and tags
     from app.db import get_db
+    from app.models.social import SavedRecipe
     db = get_db()
     categories = db.execute(
         'SELECT c.* FROM categories c '
@@ -48,6 +50,11 @@ def view(id):
         'WHERE rt.recipe_id = ?', (id,)
     ).fetchall()
     
+    # Check if recipe is saved by current user
+    is_saved = False
+    if g.user:
+        is_saved = SavedRecipe.is_saved(g.user['id'], id)
+    
     return render_template('recipes/view.html', 
                          recipe=recipe, 
                          ingredients=ingredients,
@@ -55,7 +62,8 @@ def view(id):
                          reviews=reviews,
                          comments=comments,
                          categories=categories,
-                         tags=tags)
+                         tags=tags,
+                         is_saved=is_saved)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -249,3 +257,24 @@ def fork(id):
     
     flash('Recipe forked successfully!')
     return redirect(url_for('recipes.view', id=new_recipe_id))
+
+
+@bp.route('/<int:id>/save', methods=('POST',))
+@login_required
+def save(id):
+    """Save a recipe to user's saved recipes."""
+    from app.models.social import SavedRecipe
+    
+    recipe = Recipe.get_by_id(id)
+    if recipe is None:
+        flash('Recipe not found.')
+        return redirect(url_for('recipes.index'))
+    
+    if SavedRecipe.is_saved(g.user['id'], id):
+        SavedRecipe.unsave(g.user['id'], id)
+        flash('Recipe removed from saved recipes.')
+    else:
+        SavedRecipe.save(g.user['id'], id)
+        flash('Recipe saved successfully!')
+    
+    return redirect(url_for('recipes.view', id=id))

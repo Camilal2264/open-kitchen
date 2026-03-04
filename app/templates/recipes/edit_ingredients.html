@@ -3,68 +3,109 @@
 {% block title %}Edit Ingredients - {{ recipe.title }}{% endblock %}
 
 {% block content %}
-<h1>Edit Ingredients: {{ recipe.title }}</h1>
+<h1 class="title is-2">🥕 Edit Ingredients: {{ recipe.title }}</h1>
 
-<div class="card">
-    <h2>Add Ingredient</h2>
-    <form method="post" class="form-card">
-        <div class="form-group">
-            <label for="name">Ingredient Name *</label>
-            <input type="text" name="name" id="name" required>
+<div class="box mb-5">
+    <h2 class="title is-4">Add New Ingredient</h2>
+    <form method="post">
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <label class="label" for="name">Ingredient Name *</label>
+                    <div class="control">
+                        <input class="input" type="text" name="name" id="name" placeholder="e.g., All-purpose flour" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column is-3">
+                <div class="field">
+                    <label class="label" for="quantity">Quantity *</label>
+                    <div class="control">
+                        <input class="input" type="number" name="quantity" id="quantity" step="0.01" min="0" placeholder="2" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column is-3">
+                <div class="field">
+                    <label class="label" for="unit_id">Unit *</label>
+                    <div class="control">
+                        <div class="select is-fullwidth">
+                            <select name="unit_id" id="unit_id" required>
+                                <option value="">Select unit</option>
+                                {% for unit in units %}
+                                <option value="{{ unit.id }}">{{ unit.name }} ({{ unit.abbreviation }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="quantity">Quantity *</label>
-            <input type="number" name="quantity" id="quantity" step="0.01" min="0" required>
+        <div class="field">
+            <label class="label" for="allergen_id">Allergen (optional)</label>
+            <div class="control">
+                <div class="select is-fullwidth">
+                    <select name="allergen_id" id="allergen_id">
+                        <option value="">None</option>
+                        {% for allergen in allergens %}
+                        <option value="{{ allergen.id }}">⚠️ {{ allergen.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="unit_id">Unit *</label>
-            <select name="unit_id" id="unit_id" required>
-                <option value="">-- Select unit --</option>
-                {% for unit in units %}
-                <option value="{{ unit.id }}">{{ unit.name }} ({{ unit.abbreviation }})</option>
-                {% endfor %}
-            </select>
+        <div class="field is-grouped">
+            <div class="control">
+                <button type="submit" class="button is-primary">
+                    <span class="icon">➕</span>
+                    <span>Add Ingredient</span>
+                </button>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="allergen_id">Allergen (optional)</label>
-            <select name="allergen_id" id="allergen_id">
-                <option value="">-- None --</option>
-                {% for allergen in allergens %}
-                <option value="{{ allergen.id }}">{{ allergen.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <button type="submit">Add Ingredient</button>
     </form>
 </div>
 
 {% if ingredients %}
-<div class="card">
-    <h2>Current Ingredients</h2>
-    <ul style="list-style: none; padding: 0;">
-    {% for ing in ingredients %}
-        <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
-            <span>
-                {{ ing.quantity }} {{ ing.abbreviation or ing.unit_name }} {{ ing.name }}
-                {% if ing.allergen_name %}
-                <span style="color: #e74c3c; font-weight: bold;">({{ ing.allergen_name }})</span>
-                {% endif %}
-            </span>
-            <form method="post" action="{{ url_for('recipes.delete_ingredient', id=ing.id) }}" style="display: inline; margin: 0;">
-                <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">Delete</button>
-            </form>
-        </li>
-    {% endfor %}
-    </ul>
+<div class="box">
+    <h2 class="title is-4">Current Ingredients</h2>
+    <div class="content">
+        {% for ing in ingredients %}
+        <div class="notification mb-2">
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <strong>{{ ing.quantity }}</strong> {{ ing.abbreviation or ing.unit_name }} {{ ing.name }}
+                        {% if ing.allergen_name %}
+                        <span class="tag is-danger ml-2">⚠️ {{ ing.allergen_name }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <form method="post" action="{{ url_for('recipes.delete_ingredient', id=ing.id) }}">
+                            <button type="submit" class="button is-danger is-small">
+                                <span class="icon">🗑️</span>
+                                <span>Delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endif %}
 
-<div style="margin-top: 1rem;">
-    <a href="{{ url_for('recipes.edit_instructions', id=recipe.id) }}" class="btn">Next: Add Instructions</a>
-    <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="btn btn-secondary">View Recipe</a>
+<div class="buttons mt-5">
+    <a href="{{ url_for('recipes.edit_instructions', id=recipe.id) }}" class="button is-primary">
+        <span class="icon">➡️</span>
+        <span>Next: Add Instructions</span>
+    </a>
+    <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="button is-light">View Recipe</a>
 </div>
 {% endblock %}
