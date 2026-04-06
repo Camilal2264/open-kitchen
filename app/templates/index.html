@@ -3,196 +3,244 @@
 {% block title %}Home - Open Kitchen{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <div class="hero-body has-text-centered">
-        <p class="title is-1" style="color: white; font-size: 2.5rem;">
-            🍳 Welcome to Open Kitchen
-        </p>
-        <p class="subtitle is-5" style="color: white; margin-bottom: 2rem;">
-            A collaborative recipe management system for families and communities
-        </p>
+<style>
+    /* --- HERO SECTION --- */
+    .hero-title {
+        font-family: 'Georgia', serif;
+        text-transform: uppercase;
+        font-size: 3.5rem;
+        color: var(--cream);
+        letter-spacing: 2px;
+        margin-bottom: 1rem;
+    }
+
+    .hero-subtitle {
+        color: var(--cream);
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
+        margin-bottom: 3rem;
+    }
+
+    /* --- STATS SECTION --- */
+    .stat-pill {
+        background-color: var(--pill-green);
+        border: 3px solid var(--border-dark);
+        border-radius: 30px;
+        padding: 2rem;
+        text-align: center;
+        transition: transform 0.2s;
+    }
+
+    .stat-pill:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-val {
+        display: block;
+        font-family: 'Georgia', serif;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--border-dark);
+    }
+
+    .stat-name {
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+
+    /* --- BROWSE CATEGORIES --- */
+    .category-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin: 2rem 0;
+    }
+
+    .category-pill {
+        background-color: white;
+        border: 2px solid var(--border-dark);
+        border-radius: 12px;
+        padding: 8px 18px;
+        color: var(--forest-green) !important;
+        font-weight: bold;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.2s;
+    }
+
+    .category-pill:hover {
+        background-color: var(--pill-green);
+        transform: translateY(-3px);
+        box-shadow: 4px 4px 0px var(--border-dark);
+    }
+
+    /* --- RECENT ADDITIONS (RECIPE CARDS) --- */
+    .recipe-grid-card {
+        display: block;
+        background-color: rgba(255, 255, 255, 0.05);
+        border: 2px solid var(--pill-green);
+        border-radius: 20px;
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        text-decoration: none !important;
+    }
+
+    .recipe-grid-card:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+        border-color: var(--cream);
+    }
+
+    .recipe-title {
+        font-family: 'Georgia', serif;
+        color: var(--pill-green) !important;
+        font-weight: bold;
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .recipe-description {
+        color: var(--cream);
+        font-size: 0.85rem;
+        line-height: 1.4;
+        opacity: 0.9;
+    }
+
+    .meta-label {
+        margin-top: 1rem;
+        font-size: 0.7rem;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        color: var(--pill-green);
+        text-transform: uppercase;
+    }
+
+    /* --- FEATURES SECTION --- */
+    .feature-card {
+        background-color: var(--cream);
+        border: 2px solid var(--border-dark);
+        border-radius: 20px;
+        padding: 2rem;
+        height: 100%;
+        text-align: center;
+    }
+
+    .feature-title {
+        font-family: 'Georgia', serif;
+        text-transform: uppercase;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+</style>
+
+<section class="section has-text-centered" style="padding: 4rem 0;">
+    <h1 class="hero-title">Open Kitchen</h1>
+    <p class="hero-subtitle">Collaborative Recipe Management for Communities</p>
+
+    <div class="buttons is-centered">
         {% if not g.user %}
-        <div class="buttons is-centered">
-            <a href="{{ url_for('auth.register') }}" class="button is-large is-light">
-                <span class="icon">✨</span>
-                <span>Get Started</span>
-            </a>
-            <a href="{{ url_for('auth.login') }}" class="button is-large is-outlined is-white">
-                <span class="icon">🔑</span>
-                <span>Login</span>
-            </a>
-        </div>
+            <a href="{{ url_for('auth.register') }}" class="btn-pill" style="padding: 15px 40px;">GET STARTED</a>
+            <a href="{{ url_for('auth.login') }}" class="btn-pill" style="background-color: transparent; color: var(--cream); border-color: var(--cream); margin-left: 15px;">LOGIN</a>
         {% else %}
-        <div class="buttons is-centered">
-            <a href="{{ url_for('recipes.create') }}" class="button is-large is-light">
-                <span class="icon">✨</span>
-                <span>Create Recipe</span>
-            </a>
-            <a href="{{ url_for('dashboard.index') }}" class="button is-large is-outlined is-white">
-                <span class="icon">🏠</span>
-                <span>My Kitchen</span>
-            </a>
-        </div>
+            <a href="{{ url_for('recipes.create') }}" class="btn-pill" style="padding: 15px 40px;">CREATE RECIPE</a>
+            <a href="{{ url_for('dashboard.index') }}" class="btn-pill" style="background-color: transparent; color: var(--cream); border-color: var(--cream); margin-left: 15px;">MY KITCHEN</a>
         {% endif %}
     </div>
 </section>
 
-<div class="columns is-multiline mb-5">
+<div class="columns is-multiline mb-6">
     <div class="column is-4">
-        <a href="{{ url_for('recipes.index') }}" style="text-decoration: none;">
-            <div class="stat-card">
-                <span class="stat-number">📖 {{ stats.total_recipes }}</span>
-                <span class="stat-label">Recipes</span>
-            </div>
-        </a>
+        <div class="stat-pill">
+            <span class="stat-val">{{ stats.total_recipes }}</span>
+            <span class="stat-name">Recipes Shared</span>
+        </div>
     </div>
     <div class="column is-4">
-        <a href="{{ url_for('admin.users') }}" style="text-decoration: none;">
-            <div class="stat-card">
-                <span class="stat-number">👥 {{ stats.total_users }}</span>
-                <span class="stat-label">Community Members</span>
-            </div>
-        </a>
+        <div class="stat-pill">
+            <span class="stat-val">{{ stats.total_users }}</span>
+            <span class="stat-name">Community Members</span>
+        </div>
     </div>
     <div class="column is-4">
-        <a href="{{ url_for('recipes.index') }}" style="text-decoration: none;">
-            <div class="stat-card">
-                <span class="stat-number">⭐ {{ stats.total_reviews }}</span>
-                <span class="stat-label">Reviews</span>
-            </div>
-        </a>
+        <div class="stat-pill">
+            <span class="stat-val">{{ stats.total_reviews }}</span>
+            <span class="stat-name">Total Reviews</span>
+        </div>
     </div>
 </div>
 
-<div class="box mb-5">
-    <h2 class="title is-3 has-text-centered">🔍 Browse by Category</h2>
-    <div class="buttons is-centered">
-        <a href="{{ url_for('recipes.index', category=1) }}" class="button is-rounded category-filter" style="background-color: #ff6b9d; color: white;">
-            <span class="category-emoji">🥟</span> Appetizer
-        </a>
-        <a href="{{ url_for('recipes.index', category=2) }}" class="button is-rounded category-filter" style="background-color: #ff9a76; color: white;">
-            <span class="category-emoji">🍖</span> Main Course
-        </a>
-        <a href="{{ url_for('recipes.index', category=3) }}" class="button is-rounded category-filter" style="background-color: #ffd93d; color: #333;">
-            <span class="category-emoji">🍰</span> Dessert
-        </a>
-        <a href="{{ url_for('recipes.index', category=4) }}" class="button is-rounded category-filter" style="background-color: #ffb74d; color: white;">
-            <span class="category-emoji">🥞</span> Breakfast
-        </a>
-        <a href="{{ url_for('recipes.index', category=5) }}" class="button is-rounded category-filter" style="background-color: #81c784; color: white;">
-            <span class="category-emoji">🍱</span> Lunch
-        </a>
-        <a href="{{ url_for('recipes.index', category=6) }}" class="button is-rounded category-filter" style="background-color: #ba68c8; color: white;">
-            <span class="category-emoji">🍲</span> Dinner
-        </a>
-        <a href="{{ url_for('recipes.index', category=7) }}" class="button is-rounded category-filter" style="background-color: #4fc3f7; color: white;">
-            <span class="category-emoji">🍿</span> Snack
-        </a>
-        <a href="{{ url_for('recipes.index', category=8) }}" class="button is-rounded category-filter" style="background-color: #64b5f6; color: white;">
-            <span class="category-emoji">🥤</span> Beverage
-        </a>
-        <a href="{{ url_for('recipes.index', category=9) }}" class="button is-rounded category-filter" style="background-color: #aed581; color: white;">
-            <span class="category-emoji">🥗</span> Salad
-        </a>
-        <a href="{{ url_for('recipes.index', category=10) }}" class="button is-rounded category-filter" style="background-color: #ff8a65; color: white;">
-            <span class="category-emoji">🍜</span> Soup
-        </a>
-        <a href="{{ url_for('recipes.index', category=11) }}" class="button is-rounded category-filter" style="background-color: #90a4ae; color: white;">
-            <span class="category-emoji">🍟</span> Side Dish
-        </a>
-        <a href="{{ url_for('recipes.index') }}" class="button is-rounded is-primary category-filter">
-            <span>View All →</span>
-        </a>
+<div class="form-card" style="background-color: var(--cream); border: 3px solid var(--border-dark); border-radius: 40px; padding: 3rem; margin-bottom: 4rem;">
+    <h2 style="font-family: 'Georgia', serif; text-transform: uppercase; text-align: center; margin-bottom: 2rem; font-size: 1.5rem;">Browse Categories</h2>
+    <div class="category-list">
+        {% set cats = [
+            ('1', 'Appetizer'), ('2', 'Main Course'), ('3', 'Dessert'),
+            ('4', 'Breakfast'), ('5', 'Lunch'), ('6', 'Dinner'),
+            ('7', 'Snack'), ('8', 'Beverage'), ('9', 'Salad'),
+            ('10', 'Soup'), ('11', 'Side Dish')
+        ] %}
+        {% for cid, cname in cats %}
+            <a href="{{ url_for('recipes.index', category=cid) }}" class="category-pill">{{ cname }}</a>
+        {% endfor %}
+        <a href="{{ url_for('recipes.index') }}" class="category-pill" style="background-color: var(--pill-green);">VIEW ALL →</a>
     </div>
 </div>
 
-<div class="block mb-5">
-    <div class="level mb-4">
+<div class="mb-6">
+    <div class="level">
         <div class="level-left">
-            <div class="level-item">
-                <h2 class="title is-3">🔥 Recent Recipes</h2>
-            </div>
+            <h2 style="font-family: 'Georgia', serif; text-transform: uppercase; color: var(--cream); font-size: 1.8rem;">Recent Additions</h2>
         </div>
         <div class="level-right">
-            <div class="level-item">
-                <a href="{{ url_for('recipes.index') }}" class="button is-primary is-outlined has-text-white">View All Recipes →</a>
-            </div>
+            <a href="{{ url_for('recipes.index') }}" style="color: var(--cream); font-weight: bold; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Browse All →</a>
         </div>
     </div>
-    
-    <div class="columns is-multiline">
+
+    <div class="columns is-multiline mt-4">
         {% for recipe in recipes %}
-        <div class="column is-4">
-            <div class="card recipe-card">
-                <header class="card-header">
-                    <p class="card-header-title" style="color: white;">
-                        {{ recipe.title }}
-                    </p>
-                </header>
-                <div class="card-content">
-                    <div class="content">
-                        <p>{{ recipe.description[:100] if recipe.description }}{% if recipe.description and recipe.description|length > 100 %}...{% endif %}</p>
-                        <div class="tags">
-                            <span class="tag"><span class="icon">👤</span> {{ recipe.author_name }}</span>
-                            {% if recipe.avg_rating %}
-                            <span class="tag is-warning">⭐ {{ "%.1f"|format(recipe.avg_rating) }} ({{ recipe.review_count }})</span>
-                            {% endif %}
-                            {% if recipe.prep_time_minutes or recipe.cook_time_minutes %}
-                            <span class="tag is-info">⏱️ {{ (recipe.prep_time_minutes or 0) + (recipe.cook_time_minutes or 0) }} min</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <footer class="card-footer">
-                    <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="card-footer-item">
-                        <span class="icon">👁️</span>
-                        <span>View Recipe</span>
-                    </a>
-                </footer>
+            <div class="column is-4">
+                <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="recipe-grid-card">
+                    <h3 class="recipe-title">{{ recipe.title }}</h3>
+                    <p class="recipe-description">{{ recipe.description[:80] }}...</p>
+                    <div class="meta-label">BY {{ recipe.author_name|upper }}</div>
+                </a>
             </div>
-        </div>
-        {% else %}
-        <div class="column is-12">
-            <div class="notification is-info is-light has-text-centered" style="padding: 3rem;">
-                <p class="title is-5">No recipes yet!</p>
-                <p>{% if g.user %}<a href="{{ url_for('recipes.create') }}">Create the first one!</a>{% else %}<a href="{{ url_for('auth.register') }}">Register</a> to create the first one!{% endif %}</p>
-            </div>
-        </div>
         {% endfor %}
     </div>
 </div>
 
-<div class="box has-background-light has-text-centered" style="padding: 3rem;">
-    <h2 class="title is-3">💡 Why Open Kitchen?</h2>
-    <div class="columns is-multiline mt-4">
-        <div class="column is-3">
-            <div class="box" style="height: 100%;">
-                <p class="title is-1">📖</p>
-                <p class="title is-5">Structured Recipes</p>
-                <p>Store recipes as dynamic data with automatic ingredient scaling, not static text.</p>
-            </div>
+<div class="columns is-multiline">
+    <div class="column is-3">
+        <div class="feature-card">
+            <h3 class="feature-title">Structured Data</h3>
+            <p style="font-size: 0.9rem;">Dynamic scaling and structured ingredients for modern cooking.</p>
         </div>
-        <div class="column is-3">
-            <div class="box" style="height: 100%;">
-                <p class="title is-1">🍴</p>
-                <p class="title is-5">Fork & Personalize</p>
-                <p>Create your own versions of recipes while maintaining the original lineage.</p>
-            </div>
+    </div>
+    <div class="column is-3">
+        <div class="feature-card">
+            <h3 class="feature-title">Fork & Adapt</h3>
+            <p style="font-size: 0.9rem;">Create personal versions while honoring the original creator.</p>
         </div>
-        <div class="column is-3">
-            <div class="box" style="height: 100%;">
-                <p class="title is-1">⚠️</p>
-                <p class="title is-5">Allergen Safety</p>
-                <p>Track and filter by allergens for dietary safety and compliance.</p>
-            </div>
+    </div>
+    <div class="column is-3">
+        <div class="feature-card">
+            <h3 class="feature-title">Dietary Safety</h3>
+            <p style="font-size: 0.9rem;">Integrated allergen tracking for safer community sharing.</p>
         </div>
-        <div class="column is-3">
-            <div class="box" style="height: 100%;">
-                <p class="title is-1">👥</p>
-                <p class="title is-5">Community Driven</p>
-                <p>Share recipes, leave reviews, and collaborate with your family or community.</p>
-            </div>
+    </div>
+    <div class="column is-3">
+        <div class="feature-card">
+            <h3 class="feature-title">Collective Kitchen</h3>
+            <p style="font-size: 0.9rem;">A space for families and groups to build a shared legacy.</p>
         </div>
     </div>
 </div>
+
 {% endblock %}

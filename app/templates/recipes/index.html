@@ -1,131 +1,100 @@
 {% extends 'base.html' %}
 
-{% block title %}Recipes - Open Kitchen{% endblock %}
+{% block title %}Open Kitchen - Home{% endblock %}
 
 {% block content %}
-<div class="level mb-5">
-    <div class="level-left">
-        <div class="level-item">
-            <h1 class="title is-2">📖 All Recipes</h1>
-        </div>
-    </div>
-    <div class="level-right">
-        <div class="level-item">
-            {% if g.user %}
-            <a href="{{ url_for('recipes.create') }}" class="button is-primary is-medium">
-                <span class="icon">✨</span>
-                <span>Create Recipe</span>
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</div>
+<style>
+    /* 1. Fix the Category Spacing */
+    .category-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.5rem; /* This puts space between the words */
+        margin: 1.5rem 0;
+    }
 
-<!-- Search and Filter Section -->
-<div class="search-section mb-5">
-    <form method="get" action="{{ url_for('recipes.index') }}">
-        <div class="field has-addons">
-            <div class="control is-expanded">
-                <input class="input is-medium" type="text" name="search" 
-                       placeholder="🔍 Search recipes by name or description..." 
-                       value="{{ request.args.get('search', '') }}">
-            </div>
-            <div class="control">
-                <button type="submit" class="button is-primary is-medium">
-                    Search
-                </button>
-            </div>
-        </div>
-    </form>
+    .category-link {
+        color: var(--forest-green);
+        font-weight: bold;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    .category-link:hover {
+        opacity: 0.7;
+        text-decoration: underline;
+    }
+
+    /* 2. Fix the "Recent Additions" Dark Section */
+    .recent-section {
+        color: var(--cream); /* Makes general text cream */
+        margin-top: 4rem;
+    }
+
+    .recipe-entry {
+        margin-bottom: 2.5rem;
+    }
+
+    /* Fix the blue link issue */
+    .recipe-entry a {
+        color: var(--pill-green) !important; /* High contrast green/yellow */
+        font-family: 'Georgia', serif;
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .recipe-entry a:hover {
+        color: var(--cream) !important;
+    }
+
+    .author-tag {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        opacity: 0.8;
+        display: block;
+        margin-top: 0.5rem;
+    }
+
+    .recipe-description {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin: 0.5rem 0;
+    }
+</style>
+
+<div class="box has-text-centered" style="background-color: var(--cream); border: 3px solid var(--border-dark); border-radius: 40px; padding: 3rem;">
+    <h2 style="font-family: 'Georgia', serif; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-bottom: 1rem;">Browse Categories</h2>
     
-    <div class="mt-4">
-        <p class="subtitle is-6 mb-2"><strong>Filter by Category:</strong></p>
-        <div class="buttons">
-            <a href="{{ url_for('recipes.index') }}" class="button is-rounded is-small {% if not request.args.get('category') %}is-primary{% else %}is-light{% endif %}">
-                All
-            </a>
-            <a href="{{ url_for('recipes.index', category=1) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '1' %}#ff6b9d{% else %}#ffebf3{% endif %}; color: {% if request.args.get('category') == '1' %}white{% else %}#ff6b9d{% endif %};">
-                🥟 Appetizer
-            </a>
-            <a href="{{ url_for('recipes.index', category=2) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '2' %}#ff9a76{% else %}#fff3ed{% endif %}; color: {% if request.args.get('category') == '2' %}white{% else %}#ff9a76{% endif %};">
-                🍖 Main Course
-            </a>
-            <a href="{{ url_for('recipes.index', category=3) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '3' %}#ffd93d{% else %}#fff9e6{% endif %}; color: #333;">
-                🍰 Dessert
-            </a>
-            <a href="{{ url_for('recipes.index', category=4) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '4' %}#ffb74d{% else %}#fff4e6{% endif %}; color: {% if request.args.get('category') == '4' %}white{% else %}#ffb74d{% endif %};">
-                🥞 Breakfast
-            </a>
-            <a href="{{ url_for('recipes.index', category=5) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '5' %}#81c784{% else %}#f1f8f4{% endif %}; color: {% if request.args.get('category') == '5' %}white{% else %}#81c784{% endif %};">
-                🍱 Lunch
-            </a>
-            <a href="{{ url_for('recipes.index', category=6) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '6' %}#ba68c8{% else %}#f8f0fa{% endif %}; color: {% if request.args.get('category') == '6' %}white{% else %}#ba68c8{% endif %};">
-                🍲 Dinner
-            </a>
-            <a href="{{ url_for('recipes.index', category=7) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '7' %}#4fc3f7{% else %}#e8f8fd{% endif %}; color: {% if request.args.get('category') == '7' %}white{% else %}#4fc3f7{% endif %};">
-                🍿 Snack
-            </a>
-            <a href="{{ url_for('recipes.index', category=8) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '8' %}#64b5f6{% else %}#ecf5fe{% endif %}; color: {% if request.args.get('category') == '8' %}white{% else %}#64b5f6{% endif %};">
-                🥤 Beverage
-            </a>
-            <a href="{{ url_for('recipes.index', category=9) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '9' %}#aed581{% else %}#f6faf0{% endif %}; color: {% if request.args.get('category') == '9' %}white{% else %}#aed581{% endif %};">
-                🥗 Salad
-            </a>
-            <a href="{{ url_for('recipes.index', category=10) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '10' %}#ff8a65{% else %}#fff3ef{% endif %}; color: {% if request.args.get('category') == '10' %}white{% else %}#ff8a65{% endif %};">
-                🍜 Soup
-            </a>
-            <a href="{{ url_for('recipes.index', category=11) }}" class="button is-rounded is-small category-filter" style="background-color: {% if request.args.get('category') == '11' %}#90a4ae{% else %}#f4f6f7{% endif %}; color: {% if request.args.get('category') == '11' %}white{% else %}#90a4ae{% endif %};">
-                🍟 Side Dish
-            </a>
-        </div>
+    <div class="category-list">
+        {% for cat in categories %}
+            <a href="{{ url_for('recipes.category', name=cat.name) }}" class="category-link">{{ cat.name }}</a>
+        {% endfor %}
+        <a href="#" class="btn-pill" style="padding: 5px 15px; font-size: 0.8rem;">VIEW ALL →</a>
     </div>
 </div>
 
-<!-- Recipe Grid -->
-<div class="columns is-multiline">
-    {% for recipe in recipes %}
-    <div class="column is-4">
-        <div class="card recipe-card">
-            <header class="card-header">
-                <p class="card-header-title" style="color: white;">
+<div class="recent-section">
+    <div class="level is-mobile mb-6">
+        <div class="level-left">
+            <h2 style="font-family: 'Georgia', serif; text-transform: uppercase; font-size: 2rem; font-weight: bold;">Recent Additions</h2>
+        </div>
+        <div class="level-right">
+            <a href="#" style="color: var(--cream); font-weight: bold; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Browse All →</a>
+        </div>
+    </div>
+
+    <div class="columns is-multiline">
+        {% for recipe in recent_recipes %}
+            <div class="column is-4 recipe-entry">
+                <a href="{{ url_for('recipes.view', id=recipe.id) }}">
                     {{ recipe.title }}
-                </p>
-            </header>
-            <div class="card-content">
-                <div class="content">
-                    <p>{{ recipe.description[:100] if recipe.description }}{% if recipe.description and recipe.description|length > 100 %}...{% endif %}</p>
-                    <div class="tags">
-                        <span class="tag">
-                            <span class="icon">👤</span> {{ recipe.author_name }}
-                        </span>
-                        {% if recipe.avg_rating %}
-                        <span class="tag is-warning">
-                            ⭐ {{ "%.1f"|format(recipe.avg_rating) }} ({{ recipe.review_count }})
-                        </span>
-                        {% endif %}
-                        {% if recipe.prep_time_minutes or recipe.cook_time_minutes %}
-                        <span class="tag is-info">
-                            ⏱️ {{ (recipe.prep_time_minutes or 0) + (recipe.cook_time_minutes or 0) }} min
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            <footer class="card-footer">
-                <a href="{{ url_for('recipes.view', id=recipe.id) }}" class="card-footer-item">
-                    <span class="icon">👁️</span>
-                    <span>View Recipe</span>
                 </a>
-            </footer>
-        </div>
+                <p class="recipe-description">{{ recipe.description[:100] }}{% if recipe.description|length > 100 %}...{% endif %}</p>
+                <span class="author-tag">By {{ recipe.author_name }}</span>
+            </div>
+        {% endfor %}
     </div>
-    {% else %}
-    <div class="column is-12">
-        <div class="notification is-info is-light has-text-centered" style="padding: 3rem;">
-            <p class="title is-5">No recipes found.</p>
-            <p>{% if g.user %}Be the first to <a href="{{ url_for('recipes.create') }}">create one</a>!{% else %}Please adjust your filters or <a href="{{ url_for('recipes.create') }}">create a new recipe</a>.{% endif %}</p>
-        </div>
-    </div>
-    {% endfor %}
 </div>
 {% endblock %}

@@ -3,109 +3,80 @@
 {% block title %}Create Recipe - Open Kitchen{% endblock %}
 
 {% block content %}
-<h1 class="title is-2">✨ Create New Recipe</h1>
+<style>
+    .recipe-card {
+        background-color: var(--cream);
+        border: 3px solid var(--border-dark);
+        border-radius: 30px;
+        padding: 3rem;
+        box-shadow: 10px 10px 0px var(--border-dark); /* Match the Auth style */
+        margin-top: 3rem;
+    }
 
-<div class="box">
-    <form method="post">
-        <div class="field">
-            <label class="label" for="title">Title *</label>
-            <div class="control">
-                <input class="input" type="text" name="title" id="title" placeholder="e.g., Grandma's Chocolate Chip Cookies" required>
-            </div>
-        </div>
+    .recipe-title {
+        font-family: 'Georgia', serif;
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 2rem;
+        color: var(--border-dark);
+        margin-bottom: 2rem;
+    }
 
-        <div class="field">
-            <label class="label" for="template_type">Recipe Type *</label>
-            <div class="control">
-                <div class="select is-fullwidth">
-                    <select name="template_type" id="template_type" required>
-                        <option value="standard">Standard Recipe</option>
-                        <option value="quick_tip">Quick Tip</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+    .form-label {
+        display: block;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
 
-        <div class="field">
-            <label class="label" for="description">Description</label>
-            <div class="control">
-                <textarea class="textarea" name="description" id="description" placeholder="Describe your recipe..."></textarea>
-            </div>
-        </div>
+    .recipe-input, .recipe-textarea {
+        width: 100%;
+        border: 2px solid var(--border-dark);
+        border-radius: 15px;
+        padding: 12px;
+        margin-bottom: 1.5rem;
+        font-family: inherit;
+        background-color: white;
+    }
 
-        <div class="columns">
-            <div class="column">
+    .recipe-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .recipe-input:focus, .recipe-textarea:focus {
+        outline: none;
+        border-color: var(--pill-green);
+    }
+</style>
+
+<div class="columns is-centered">
+    <div class="column is-7-desktop is-9-tablet">
+        <div class="recipe-card">
+            <h1 class="recipe-title has-text-centered">Create New Recipe</h1>
+            
+            <form method="post">
+                <input type="hidden" name="template_type" value="create_recipe">
+
                 <div class="field">
-                    <label class="label" for="base_servings">Base Servings</label>
-                    <div class="control">
-                        <input class="input" type="number" name="base_servings" id="base_servings" min="1" placeholder="4">
-                    </div>
+                    <label class="form-label" for="title">Recipe Title</label>
+                    <input class="recipe-input" type="text" name="title" id="title" placeholder="e.g., Sunday Gravy" required>
                 </div>
-            </div>
-            <div class="column">
+
                 <div class="field">
-                    <label class="label" for="prep_time_minutes">Prep Time (min)</label>
-                    <div class="control">
-                        <input class="input" type="number" name="prep_time_minutes" id="prep_time_minutes" min="0" placeholder="15">
-                    </div>
+                    <label class="form-label" for="description">Description</label>
+                    <textarea class="recipe-textarea" name="description" id="description" placeholder="Share a little bit about this dish..."></textarea>
                 </div>
-            </div>
-            <div class="column">
-                <div class="field">
-                    <label class="label" for="cook_time_minutes">Cook Time (min)</label>
-                    <div class="control">
-                        <input class="input" type="number" name="cook_time_minutes" id="cook_time_minutes" min="0" placeholder="30">
-                    </div>
+
+                <div class="has-text-centered mt-4">
+                    <button type="submit" class="btn-pill" style="width: 100%; cursor: pointer;">
+                        SAVE AND ADD INGREDIENTS
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
-
-        <div class="field">
-            <label class="label">Categories</label>
-            <div class="control">
-                <div class="buttons">
-                    {% for category in categories %}
-                    <label class="button is-rounded category-filter" style="cursor: pointer;">
-                        <input type="checkbox" name="categories" value="{{ category.id }}" style="margin-right: 0.5rem;">
-                        {% if category.id == 1 %}🥟{% elif category.id == 2 %}🍖{% elif category.id == 3 %}🍰{% elif category.id == 4 %}🥞{% elif category.id == 5 %}🍱{% elif category.id == 6 %}🍲{% elif category.id == 7 %}🍿{% elif category.id == 8 %}🥤{% elif category.id == 9 %}🥗{% elif category.id == 10 %}🍜{% elif category.id == 11 %}🍟{% endif %}
-                        {{ category.name }}
-                    </label>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">Dietary Tags</label>
-            <div class="control">
-                <div class="field is-grouped is-grouped-multiline">
-                    {% for tag in tags %}
-                    <div class="control">
-                        <label class="checkbox">
-                            <input type="checkbox" name="tags" value="{{ tag.id }}">
-                            {{ tag.name }}
-                        </label>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <div class="field is-grouped">
-            <div class="control">
-                <button type="submit" class="button is-primary">
-                    <span class="icon">✨</span>
-                    <span>Create Recipe</span>
-                </button>
-            </div>
-            <div class="control">
-                <a href="{{ url_for('recipes.index') }}" class="button is-light">Cancel</a>
-            </div>
-        </div>
-    </form>
-
-    <div class="notification is-info is-light mt-4">
-        <p><strong>Note:</strong> After creating the recipe, you can add ingredients and instructions.</p>
     </div>
 </div>
 {% endblock %}
